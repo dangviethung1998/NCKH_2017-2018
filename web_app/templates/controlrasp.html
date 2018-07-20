@@ -1,0 +1,158 @@
+<html>
+
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+	</head>
+
+	<body>
+    <h1>Xin chao !</h1>
+		<img  width="900px" height="500px"  border="5px" src="http://192.168.1.137:5001"><!-- src là địa chỉ camera server -->
+    <div style="float:right"></div>
+		<div style=" height:400px; width:300px; float:right;">
+			<center>
+        <h1>
+          <span style="color:#5C5C5C;">Demo</span>
+          <span style="color:#139442"> Group 1</span>
+        </h1>	
+			  <h2>Điều khiển</h2>
+        <br>
+  			
+        <a href="javascript:;" id="up" style="font-size:30px;text-decoration:none;">
+          &#x1F881;<br>Tiến
+        </a>
+  			<br><br>
+      </center>
+      
+  			<a href="javascript:;" id="goleft" style="font-size:30px;text-decoration:none;">Quay Trái&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</a>
+  			<a href="javascript:;" id="goright" style="font-size:30px;text-decoration:none;">Quay Phải</a><br><br>
+  			<a href="javascript:;" id="left" style="font-size:30px;text-decoration:none;">&#x1F880;Trái</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  			<a href="javascript:;" id="right" style="font-size:30px; text-decoration:none;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Phải &#x1F882;</a><br><br>
+  			<center><a href="javascript:;" id="down" style="font-size:30px;text-decoration:none;"> Lùi<br> &#x1F883;</a>
+      </center>
+		</div>
+    <fieldset>
+        <legend>Thông tin</legend>
+        <p id="printmess"></p>
+	      <p id="printmess2"></p>
+        <script type="text/javascript">
+            var socket = io.connect('http://'+location.hostname+':5000');
+
+            socket.on('connect', function(){
+                socket.emit('something', {data: "mei connected"});
+                console.log("client connected");
+            });
+
+            socket.on('server side',function(json){
+                console.log(json);
+                document.getElementById("printmess").innerHTML = "Khoang cach: " + json.data + " cm" ;
+                document.getElementById("printmess2").innerHTML = "NhietDo,DoAm: " + json.data2;
+		            setTimeout(2000);
+                socket.emit('something', "sent");
+            });
+        </script>        
+      </fieldset>
+
+      <script>
+        function keyDown(e) {
+          if(e.preventDefault)
+            e.preventDefault();
+          var act;
+          switch(e.which){
+            case 37:
+              act = 'left';
+              break;
+            case 38:
+              act = 'up';
+              break;
+            case 39:
+              act = 'right';
+              break;
+            case 40:
+              act = 'down';
+              break;
+            default:
+              return;
+          }
+          if(e.ctrlKey){
+            if(act == 'left')
+              act = 'goleft';
+            else if(act == 'right')
+              act = 'goright';
+          }
+          if(act == lastAct) return;
+          lastAct = act;
+          console.log(act);
+          jQuery.ajax({
+            url: '{{url_for('controller')}}',
+            method: "POST",
+            data: { act: act },
+            success: function (){},
+            error: function (){}
+          });
+        }
+        function keyUp(e){
+          if(!~[37,38,39,40].indexOf(e.which)) return;
+          if(e.preventDefault)
+            e.preventDefault();
+          var act = 'stop';
+          lastAct = act;
+          console.log(act);
+          jQuery.ajax({
+            url: '{{url_for('controller')}}',
+            method: "POST",
+            data: { act: act },
+            success: function (){},
+            error: function (){}
+          });
+        }
+        var lastAct = '';
+        jQuery(function (){
+          jQuery(document).on('keydown', keyDown).on('keyup', keyUp);
+          jQuery('#down').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 40});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 40});
+          });
+          jQuery('#up').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 38});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 38});
+          });
+          jQuery('#left').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 37});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 37});
+          });
+          jQuery('#right').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 39});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 39});
+          });
+          jQuery('#goleft').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 37, ctrlKey: true});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 37, ctrlKey: true});
+          });
+          jQuery('#goright').on('mousedown', function (e){
+            e.preventDefault();
+            keyDown({which: 39, ctrlKey: true});
+          }).on('mouseup', function (e){
+            e.preventDefault();
+            keyUp({which: 39, ctrlKey: true});
+          });
+        });
+      </script>
+
+		</body>
+</html>

@@ -1,0 +1,60 @@
+<html>
+	<head>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+	</head>
+	<body>
+        <h1>Xin chao!</h1>
+		<img class="center" width="900px" height="500px"  border="5px" src="http://192.168.1.137:5001"><!-- cam server -->
+		<fieldset>
+        <legend>Thông tin</legend>
+        <p id="printmess"></p>
+	    <p id="printmess2"></p>
+        
+        <script type="text/javascript">
+            var socket = io.connect('http://'+location.hostname+':5000');
+
+            socket.on('connect', function(){
+                socket.emit('something', {data: "mei connected"});
+                console.log("client connected");
+            });
+
+            socket.on('server side',function(json){
+                console.log(json);
+                document.getElementById("printmess").innerHTML = "Khoang cach: "+json.data + " cm" ;
+                document.getElementById("printmess2").innerHTML = "NhietDo,DoAm: " +json.data2;
+                var rand_int = Math.floor((Math.random()*4+1));
+                var act = 'up';
+                if(json.data < 30){
+							switch(rand_int) {
+								case 1:
+									act = 'left';
+									break;
+								case 2:
+									act = 'goleft';
+									break;
+								case 3:
+									act = 'right';
+									break;
+								case 4:
+									act = 'goright';
+									break;
+								default:
+									act = 'up';
+						};
+                }
+                jQuery.ajax({
+                	url: '{{url_for('controller')}}',
+                	method: "POST",
+                	data: {act: act},
+                	success: function(){},
+                	error: function(){}
+                });
+                setTimeout(1000);
+                socket.emit('something', "sent");
+            });
+        </script>        
+      </fieldset>
+
+	</body>
+</html>
